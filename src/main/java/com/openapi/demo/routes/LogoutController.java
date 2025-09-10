@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
@@ -36,7 +35,6 @@ public class LogoutController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiErrorDetails.class)))
       })
-  @SecurityRequirements
   @PostMapping(value = "/api/auth/logout", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ResponseDto> logout(HttpServletRequest request) {
 

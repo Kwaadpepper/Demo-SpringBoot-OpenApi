@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -16,38 +17,52 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Component
 public class StaticCredentialFilter extends OncePerRequestFilter {
   private final CookieService cookieService;
+  private final HandlerExceptionResolver exceptionResolver;
 
-  public StaticCredentialFilter(CookieService cookieService) {
+  public StaticCredentialFilter(
+      CookieService cookieService,
+      @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver) {
     this.cookieService = cookieService;
+    this.exceptionResolver = exceptionResolver;
   }
 
   @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse servletResponse, FilterChain filterChain)
       throws ServletException, IOException {
-    final var uniqId = cookieService.getUniqIdFromRequest(request);
+    try {
+      final var uniqId = cookieService.getUniqIdFromRequest(request);
 
-    if (uniqId == null) {
-      logger.debug("Request missing 'Cookie' header with jwt token, skipping authentication.");
+      if (uniqId == null) {
+        logger.debug("Request missing 'Cookie' header with jwt token, skipping authentication.");
+        filterChain.doFilter(request, servletResponse);
+        return;
+      }
+
+      final var userDetails = getUserDetailsFromUniqIdToken(uniqId);
+
+      if (userDetails == null) {
+        throw new CookieAuthenticationFailureException("Invalid uniqId token.");
+      }
+
+      final SecurityContext securityContext = getNewSecurityContext(request, userDetails, uniqId);
+      SecurityContextHolder.setContext(securityContext);
+
+      // Pursue the filter chain.
       filterChain.doFilter(request, servletResponse);
-      return;
+    } catch (CookieAuthenticationFailureException e) {
+      // Dispatch the exception to our Global handler.
+      exceptionResolver.resolveException(request, servletResponse, null, e);
+    } catch (Exception e) {
+      logger.error("Error during filter processing");
+      // Dispatch the exception to our Global handler.
+      exceptionResolver.resolveException(request, servletResponse, null, e);
     }
-
-    final var userDetails = getUserDetailsFromUniqIdToken(uniqId);
-
-    if (userDetails == null) {
-      throw new CookieAuthenticationFailureException("Invalid uniqId token.");
-    }
-
-    final SecurityContext securityContext = getNewSecurityContext(request, userDetails, uniqId);
-    SecurityContextHolder.setContext(securityContext);
-
-    // Pursue the filter chain.
-    filterChain.doFilter(request, servletResponse);
   }
 
   private SecurityContext getNewSecurityContext(

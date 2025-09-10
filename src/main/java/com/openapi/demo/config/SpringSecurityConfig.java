@@ -22,31 +22,31 @@ public class SpringSecurityConfig {
     final List<String> routesToIgnore =
         List.of(
             "/api/auth/login",
-            "/api/auth/logout",
             "/v3/api-docs/**",
             "/swagger-ui.html",
-            "/swagger-ui/**");
+            "/swagger-ui/**",
+            "/actuator/**");
 
     return http.sessionManagement(
             // No cookie session, just state less API.
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         // No CSRF for stateless APIs.
         .csrf(AbstractHttpConfigurer::disable)
+        // 401 on unauthenticated requests.
         .exceptionHandling(
             handling ->
                 handling.authenticationEntryPoint(
                     new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+        // All requests must be authenticated unless explicitly ignored.
         .authorizeHttpRequests(
             request -> {
               // Allow non protected AuthRequestToUrls are not protected.
               request.requestMatchers(routesToIgnore.toArray(String[]::new)).permitAll();
 
-              // Allow root path.
-              request.requestMatchers("/").permitAll();
-
               // Any other routes are.
               request.anyRequest().fullyAuthenticated();
             })
+        // Custom filter to process our static user authentication.
         .addFilterAt(staticCredentialFilter, UsernamePasswordAuthenticationFilter.class)
         .build();
   }
