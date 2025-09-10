@@ -2,6 +2,7 @@ package com.openapi.demo.routes;
 
 import com.openapi.demo.dto.ApiErrorDetails;
 import com.openapi.demo.services.CookieService;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,6 +28,12 @@ public class LogoutController {
       value = {
         @ApiResponse(
             responseCode = "200",
+            headers = {
+              @Header(
+                  name = "Set-Cookie",
+                  description = "Session cookie HTTP Only",
+                  schema = @Schema(type = "string"))
+            },
             content = @Content(schema = @Schema(implementation = ResponseDto.class))),
         @ApiResponse(
             responseCode = "400",

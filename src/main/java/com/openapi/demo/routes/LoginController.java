@@ -5,7 +5,9 @@ import com.openapi.demo.dto.ApiErrorDetails;
 import com.openapi.demo.exceptions.AuthenticationFailureException;
 import com.openapi.demo.exceptions.BadRequestException;
 import com.openapi.demo.services.CookieService;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -27,11 +29,27 @@ public class LoginController {
     this.cookieService = cookieService;
   }
 
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content =
+          @Content(
+              mediaType = "application/json",
+              schema = @Schema(implementation = LoginRequest.class),
+              examples = {
+                @ExampleObject(
+                    name = "Exemple de login",
+                    value = "{\"login\": \"user.example\", \"password\": \"Password.1\"}")
+              }))
   @ApiResponses(
       value = {
         @ApiResponse(
             responseCode = "200",
             description = "Successfully authenticated",
+            headers = {
+              @Header(
+                  name = "set-cookie",
+                  description = "Session cookie HTTP Only",
+                  schema = @Schema(type = "string"))
+            },
             content = @Content(schema = @Schema(implementation = ResponseDto.class))),
         @ApiResponse(
             responseCode = "401",
