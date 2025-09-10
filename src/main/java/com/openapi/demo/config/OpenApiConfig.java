@@ -22,7 +22,7 @@ public class OpenApiConfig {
         .info(
             new Info()
                 .title("Demo OpenApi")
-                .description("Support Service Api written as an OpenClassRoom project.")
+                .description("Demo OpenApi using Spring Boot and Spring Security")
                 .version("0.0.1")
                 .contact(
                     new Contact()
