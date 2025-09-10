@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-DemoApplication<Demo-SpringBoot-OpenApi>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.openapi.demo.DemoApplication",
+      "projectName": "Demo-SpringBoot-OpenApi",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
