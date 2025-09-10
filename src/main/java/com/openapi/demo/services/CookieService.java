@@ -11,7 +11,7 @@ import org.springframework.web.util.WebUtils;
 /** Service to manage cookies, including creation, removal, and extraction of unique identifiers. */
 @Component
 public class CookieService {
-  private static final String COOKIE_NAME = "static-cookie";
+  public static final String COOKIE_NAME = "static-cookie";
   public static final String COOKIE_HTTP_PATH = "/";
   private static final Integer COOKIE_EXP_IN_MINUTES = 60;
 
@@ -56,7 +56,7 @@ public class CookieService {
 
   /** Helper method to generate a cookie with specified parameters. */
   private ResponseCookie generateCookie(
-      String name, String value, String path, Integer expirationInMinutes) {
+      String name, @Nullable String value, String path, Integer expirationInMinutes) {
     return ResponseCookie.from(name)
         .value(value)
         .path(path)
